@@ -1,6 +1,8 @@
 from ursina import *
 from enum import Enum
 
+from utils import CoreEntity
+
 
 class Status(Enum):
     READY = 1
@@ -9,26 +11,36 @@ class Status(Enum):
     RETURNING_FROM_MISSION = 4
 
 
-class SupportUnit(Entity):
-    def __init__(self, unit_type, main_force, **kwargs):
+class UnitType(Enum):
+    SCOUT = 1
+    LOGISTIC = 2
+    WAR = 3
+
+
+class SupportUnit(CoreEntity):
+    def __init__(self, unit_type, master, **kwargs):
         types = {'scout': color.olive,
                  'logistic': color.light_gray,
                  'war': color.black}
         super().__init__(model='cube', scale_y=0.3,
                          color=types[unit_type], collider='box', **kwargs)
-        self.main_force = main_force
-        self.position = main_force.position
+        self.master = master
+        self.position = master.position
         self.unit_type = unit_type
         self.supplies = 0
         self.max_supplies = 20
         self.target = None
         self.mission = None
         self.status = Status.READY
+        self.energy = 50
+        self.max_energy = 100
+
         self.behaviors = {
             'move_to_target': self.go_to_target,
             'execute_mission': self.execute_mission,
             'return_from_mission': self.return_back
         }
+        self.get_allowed_actions(self.__class__)
 
     def move(self, speed=1):
         self.position += self.forward * time.dt * speed
@@ -49,12 +61,11 @@ class SupportUnit(Entity):
             self.status = Status.RETURNING_FROM_MISSION
 
     def return_back(self):
-        dist = distance_xz(self.main_force.position, self.position)
-        self.look_at_2d(self.main_force.position, 'y')
+        dist = distance_xz(self.master.position, self.position)
+        self.look_at_2d(self.master.position, 'y')
         if dist < 2:
-            self.main_force.supplies += self.supplies
+            self.master.supplies += self.supplies
             self.target = self.mission = None
-            # self.parent = self.main_force
             self.status = Status.READY
         else:
             self.move()
@@ -76,9 +87,10 @@ class SupportUnit(Entity):
 
     def update(self):
         self.chose_action()
-        print(self.main_force.supplies)
-        dist = distance_xz(self.main_force.position, self.position)
-        if dist > self.main_force.visibility:
+        if not self.master:
+            return
+        dist = distance_xz(self.master.position, self.position)
+        if dist > self.master.visibility:
             self.visible = False
             return
         else:
