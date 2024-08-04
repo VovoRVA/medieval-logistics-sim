@@ -18,22 +18,21 @@ class UnitType(Enum):
 
 
 class SupportUnit(CoreEntity):
-    def __init__(self, unit_type, master, **kwargs):
+    def __init__(self, unit_type, master_entity, **kwargs):
         types = {'scout': color.olive,
                  'logistic': color.light_gray,
                  'war': color.black}
         super().__init__(model='cube', scale_y=0.3,
                          color=types[unit_type], collider='box', **kwargs)
-        self.master = master
-        self.position = master.position
+        self.master_entity = master_entity
+        self.position = master_entity.position
         self.unit_type = unit_type
         self.supplies = 0
         self.max_supplies = 20
         self.target = None
         self.mission = None
         self.status = Status.READY
-        self.energy = 50
-        self.max_energy = 100
+
 
         self.behaviors = {
             'move_to_target': self.go_to_target,
@@ -61,10 +60,10 @@ class SupportUnit(CoreEntity):
             self.status = Status.RETURNING_FROM_MISSION
 
     def return_back(self):
-        dist = distance_xz(self.master.position, self.position)
-        self.look_at_2d(self.master.position, 'y')
+        dist = distance_xz(self.master_entity.position, self.position)
+        self.look_at_2d(self.master_entity.position, 'y')
         if dist < 2:
-            self.master.supplies += self.supplies
+            self.master_entity.supplies += self.supplies
             self.target = self.mission = None
             self.status = Status.READY
         else:
@@ -87,10 +86,10 @@ class SupportUnit(CoreEntity):
 
     def update(self):
         self.chose_action()
-        if not self.master:
+        if not self.master_entity:
             return
-        dist = distance_xz(self.master.position, self.position)
-        if dist > self.master.visibility:
+        dist = distance_xz(self.master_entity.position, self.position)
+        if dist > self.master_entity.visibility:
             self.visible = False
             return
         else:

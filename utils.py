@@ -1,9 +1,24 @@
 from ursina import *
-
+from ursina.prefabs import button_group, button_list
 from action_manager import ActionsManager
 
 
 class CoreEntity(Entity):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.visibility = 30
+        self.strength = 1000
+
+        self.energy = 50
+        self.supplies = 50
+        self.water = 50
+
+        self.max_energy = 100
+        self.max_supplies = 100
+        self.max_water = 100
+
+        self.supplies_production = 0
+
     @property
     def master(self):
         return None
@@ -43,11 +58,25 @@ class CoreEntity(Entity):
                 self.objective_action_set.append(action)
             elif entity_name in action.targets:
                 self.subjective_action_set.append(action)
-        print(self.objective_action_set)
+        return self.objective_action_set
 
-    def create_action_button(self, button_text):
-        b = Button(model='quad', scale=.05, x=-.5, color=color.olive, text=button_text, text_size=.5,
-                   text_color=color.black)
-        b.text_size = .5
-        b.fit_to_text(radius=.1, padding=Vec2(Text.size * 1.5, Text.size))
-        return b
+    def create_action_buttons(self, target):
+        offset = 0
+        buttons = []
+
+        def destroy_buttons(buttons):
+            for button in buttons:
+                destroy(button)
+
+        for action in target.subjective_action_set:
+            print(action.name)
+            b = Button(model='quad', scale=.05, x=-0.5, y=offset, color=color.olive, text=action.name, text_size=.5,
+                       text_color=color.black)
+            buttons.append(b)
+            offset += 0.1
+            b.fit_to_text(radius=.1, padding=Vec2(Text.size * 1.5, Text.size))
+            b.on_click = Sequence(Wait(.5), Func(self.action_map[action.name], target),
+                                  Func(destroy_buttons, buttons))
+
+
+

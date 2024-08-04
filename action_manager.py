@@ -19,9 +19,9 @@ class ActionsManager(object):
     def __init__(self):
         self.allowed_actions = [Action(name='order supply run', action_type='order', master='MainForce',
                                        actor='SupportUnit', actor_type='LOGISTIC',
-                                       targets=['Castle', 'Town', 'Village']),
-                                Action(name='kill', action_type='order', master='MainForce',
-                                       actor='SupportUnit', actor_type='LOGISTIC',
+                                       targets=['Town', 'Village']),
+                                Action(name='order a raid', action_type='order', master='MainForce',
+                                       actor='SupportUnit', actor_type='SCOUT',
                                        targets=['Town'])
                                 ]
 
