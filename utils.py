@@ -1,6 +1,22 @@
 from ursina import *
-from ursina.prefabs import button_group, button_list
+from enum import Enum
+
 from action_manager import ActionsManager
+
+
+class SupportStatus(Enum):
+    READY = 1
+    ON_ROUTE = 2
+    EXECUTING_MISSION = 3
+    RETURNING_FROM_MISSION = 4
+
+
+class MainForceStatus(Enum):
+    READY = 1
+    PREPARING_FOR_MARCH = 2
+    MARCHING = 3
+    MARCHING_IN_FORCE = 4
+    MASSING_FORCES = 5
 
 
 class CoreEntity(Entity):
@@ -8,6 +24,7 @@ class CoreEntity(Entity):
         super().__init__(**kwargs)
         self.visibility = 30
         self.strength = 1000
+        self.speed = 1
 
         self.energy = 50
         self.supplies = 50
@@ -18,6 +35,9 @@ class CoreEntity(Entity):
         self.max_water = 100
 
         self.supplies_production = 0
+
+        self.objective_action_set = []
+        self.subjective_action_set = []
 
     @property
     def master(self):
@@ -47,9 +67,11 @@ class CoreEntity(Entity):
     def allowed_actions(self):
         return ActionsManager().allowed_actions
 
+    def move(self, target_position):
+        self.look_at_2d(target_position, 'y')
+        self.position += self.forward * time.dt * self.speed
+
     def get_allowed_actions(self, cls):
-        self.objective_action_set = []
-        self.subjective_action_set = []
         entity_name = cls.__name__
         for action in self.allowed_actions:
             if not action.action_type == 'order':
