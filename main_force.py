@@ -20,7 +20,10 @@ class MainForce(CoreEntity):
         self.camera = camera
 
         self.supplies_bar = HealthBar(max_value=self.max_supplies, value=self.supplies, color=color.yellow)
-
+        self_action_prerequisites_map = {
+            'order supply run': True,
+            'order a raid': True,
+            'march': True}
         self.action_map = {'order supply run': self.issue_logistic_order_to_support_unit,
                            'order a raid': self.issue_logistic_order_to_support_unit,
                            'march': None}
@@ -29,7 +32,7 @@ class MainForce(CoreEntity):
                               'scout': [],
                               'war': []}
 
-        self.speed = 0.01
+        self.speed = 0.1
         self.target_position = None
         self.status = MainForceStatus.READY
         self.behaviors = {
@@ -108,6 +111,16 @@ class MainForce(CoreEntity):
             else:
                 target = mouse.hovered_entity
                 self.create_action_buttons(target)
+        elif key == 'right mouse' or held_keys['right mouse']:
+            target = mouse.hovered_entity
+            if isinstance(target, CoreEntity):
+                if not self.textbox:
+                    self.display_target_properties(target)
+                else:
+                    destroy(self.textbox)
+
+
+
 
     def update(self):
         self.supplies_bar.value = int(self.supplies)

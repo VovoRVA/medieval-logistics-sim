@@ -35,7 +35,9 @@ class SupportUnit(CoreEntity):
         self.get_allowed_actions(self.__class__)
 
     def idle(self):
-        pass
+        if self.target and self.mission:
+            self.parent = None
+            self.status = SupportStatus.ON_ROUTE
 
     def go_to_target(self):
         dist_to_target = distance_xz(self.target.position, self.position)
@@ -60,14 +62,8 @@ class SupportUnit(CoreEntity):
         else:
             self.move(self.master_entity.position)
 
-    def execute_behavior(self):
-        self.behaviors[self.status]()
-
     def chose_action(self):
-        if self.status == SupportStatus.READY and self.target and self.mission:
-            self.parent = None
-            self.status = SupportStatus.ON_ROUTE
-        self.execute_behavior()
+        self.behaviors[self.status]()
 
     def update(self):
         self.chose_action()

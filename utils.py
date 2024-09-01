@@ -22,6 +22,7 @@ class MainForceStatus(Enum):
 class CoreEntity(Entity):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.textbox = None
         self.visibility = 30
         self.strength = 1000
         self.speed = 1
@@ -81,6 +82,10 @@ class CoreEntity(Entity):
             elif entity_name in action.targets:
                 self.subjective_action_set.append(action)
         return self.objective_action_set
+
+    def display_target_properties(self, target):
+        text_box = TextField(max_lines=30, scale=1, register_mouse_input=True, text=str(target.supplies))
+        text_box.render()
 
     def create_action_buttons(self, target):
         offset = 0
